@@ -24,7 +24,7 @@ func goDotEnvVariable(key string) string {
 	return os.Getenv(key)
 }
 
-// TODO: Move this to separate file...
+// TODO: Move envs to separate folder
 var host = goDotEnvVariable("HOST")
 var portNum = goDotEnvVariable("PORT")
 var dbUser = goDotEnvVariable("DB_USER")
