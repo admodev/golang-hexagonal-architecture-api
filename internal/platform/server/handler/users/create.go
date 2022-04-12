@@ -7,13 +7,13 @@ import (
 )
 
 type createRequest struct {
-	username  string `json:"username" binding:"required"`
-	email     string `json:"email" binding:"required"`
-	firstName string `json:"firstName" binding:"required"`
-	lastName  string `json:"lastName" binding:"required"`
-	website   string `json:"website"`
-	password  string `json:"password" binding:"required"`
-	role      string `json:"role" binding:"required"`
+	Username  string `json:"username" binding:"required"`
+	Email     string `json:"email" binding:"required"`
+	FirstName string `json:"firstName" binding:"required"`
+	LastName  string `json:"lastName" binding:"required"`
+	Website   string `json:"website"`
+	Password  string `json:"password" binding:"required"`
+	Role      string `json:"role" binding:"required"`
 }
 
 func CreateHandler(usersRepository users.UserRepository) gin.HandlerFunc {
@@ -25,8 +25,8 @@ func CreateHandler(usersRepository users.UserRepository) gin.HandlerFunc {
 			return
 		}
 
-		if len(req.website) > 0 {
-			user := users.NewUser(req.username, req.email, req.firstName, req.lastName, req.website, req.password, req.role)
+		if len(req.Website) > 0 {
+			user := users.NewUser(req.Username, req.Email, req.FirstName, req.LastName, req.Website, req.Password, req.Role)
 
 			if err := usersRepository.Save(ctx, user); err != nil {
 				ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -35,7 +35,7 @@ func CreateHandler(usersRepository users.UserRepository) gin.HandlerFunc {
 
 			ctx.Status(http.StatusCreated)
 		} else {
-			user := users.NewUser(req.username, req.email, req.firstName, req.lastName, "", req.password, req.role)
+			user := users.NewUser(req.Username, req.Email, req.FirstName, req.LastName, "", req.Password, req.Role)
 
 			if err := usersRepository.Save(ctx, user); err != nil {
 				ctx.JSON(http.StatusInternalServerError, err.Error())
