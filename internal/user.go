@@ -1,5 +1,7 @@
 package report
 
+import "context"
+
 type User struct {
 	username  string
 	email     string
@@ -32,4 +34,40 @@ func NewUser(username, email, firstName, lastName, website, password, role strin
 			role:      role,
 		}
 	}
+}
+
+type UserRepository interface {
+	Save(ctx context.Context, user User) error
+}
+
+func (u User) Username() string {
+	return u.username
+}
+
+func (u User) Email() string {
+	return u.email
+}
+
+func (u User) FirstName() string {
+	return u.firstName
+}
+
+func (u User) LastName() string {
+	return u.lastName
+}
+
+func (u User) Website() string {
+	if len(u.website) > 0 {
+		return u.website
+	} else {
+		return "No website provided"
+	}
+}
+
+func (u User) Password() string {
+	return u.password
+}
+
+func (u User) Role() string {
+	return u.role
 }
