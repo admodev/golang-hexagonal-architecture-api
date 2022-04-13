@@ -1,8 +1,7 @@
 package server
 
 import (
-	report "bctec/internal"
-	user "bctec/internal"
+	"bctec/internal"
 	"bctec/internal/platform/server/handler/health"
 	"bctec/internal/platform/server/handler/reports"
 	"bctec/internal/platform/server/handler/users"
@@ -17,14 +16,15 @@ type Server struct {
 
 	// deps
 	reportsRepository report.ReportsRepository
-	usersRepository   user.UserRepository
+	usersRepository   report.UserRepository
 }
 
-func New(host string, port uint, reportsRepository report.ReportsRepository) Server {
+func New(host string, port uint, reportsRepository report.ReportsRepository, usersRepository report.UserRepository) Server {
 	srv := Server{
 		engine:            gin.New(),
 		httpAddr:          fmt.Sprintf("%s:%d", host, port),
 		reportsRepository: reportsRepository,
+		usersRepository:   usersRepository,
 	}
 
 	srv.registerRoutes()

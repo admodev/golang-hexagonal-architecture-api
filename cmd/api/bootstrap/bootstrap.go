@@ -1,41 +1,16 @@
 package bootstrap
 
 import (
+	"bctec/cmd/api/environment"
 	"bctec/internal/platform/server"
 	"bctec/internal/platform/storage/mysql"
 	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
-	"log"
-	"os"
-	"strconv"
 )
 
-func goDotEnvVariable(key string) string {
-
-	// load .env file
-	err := godotenv.Load(".env")
-
-	if err != nil {
-		log.Fatalf("Error loading .env file")
-	}
-
-	return os.Getenv(key)
-}
-
-// TODO: Move envs to separate folder
-var host = goDotEnvVariable("HOST")
-var portNum = goDotEnvVariable("PORT")
-var dbUser = goDotEnvVariable("DB_USER")
-var dbPass = goDotEnvVariable("DB_PASS")
-var dbHost = goDotEnvVariable("DB_HOST")
-var dbPort = goDotEnvVariable("DB_PORT")
-var dbName = goDotEnvVariable("DB_NAME")
-var port, _ = strconv.ParseUint(portNum, 10, 64)
-
 func Run() error {
-	mysqlURI := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPass, dbHost, dbPort, dbName)
+	mysqlURI := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", environment.DBUSER, environment.DBPASS, environment.DBHOST, environment.DBPORT, environment.DBNAME)
 	db, err := sql.Open("mysql", mysqlURI)
 
 	if err != nil {
@@ -43,7 +18,8 @@ func Run() error {
 	}
 
 	reportRepository := mysql.NewReportRepository(db)
-	srv := server.New(host, uint(port), reportRepository)
+	userRepository := mysql.NewUserRepository(db)
+	srv := server.New(environment.HOST, uint(environment.PORT), reportRepository, userRepository)
 
 	return srv.Run()
 }

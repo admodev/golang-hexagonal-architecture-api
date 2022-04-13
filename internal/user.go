@@ -3,6 +3,7 @@ package report
 import "context"
 
 type User struct {
+	token     string
 	username  string
 	email     string
 	firstName string
@@ -12,32 +13,25 @@ type User struct {
 	role      string
 }
 
-func NewUser(username, email, firstName, lastName, website, password, role string) User {
-	if len(website) > 0 {
-		return User{
-			username:  username,
-			email:     email,
-			firstName: firstName,
-			lastName:  lastName,
-			website:   website,
-			password:  password,
-			role:      role,
-		}
-	} else {
-		return User{
-			username:  username,
-			email:     email,
-			firstName: firstName,
-			lastName:  lastName,
-			website:   "",
-			password:  password,
-			role:      role,
-		}
+func NewUser(token, username, email, firstName, lastName, website, password, role string) User {
+	return User{
+		token:     token,
+		username:  username,
+		email:     email,
+		firstName: firstName,
+		lastName:  lastName,
+		website:   website,
+		password:  password,
+		role:      role,
 	}
 }
 
 type UserRepository interface {
 	Save(ctx context.Context, user User) error
+}
+
+func (u User) Token() string {
+	return u.token
 }
 
 func (u User) Username() string {
@@ -57,11 +51,7 @@ func (u User) LastName() string {
 }
 
 func (u User) Website() string {
-	if len(u.website) > 0 {
-		return u.website
-	} else {
-		return "No website provided"
-	}
+	return u.website
 }
 
 func (u User) Password() string {
