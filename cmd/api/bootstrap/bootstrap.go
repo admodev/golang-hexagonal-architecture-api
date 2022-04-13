@@ -43,7 +43,8 @@ func Run() error {
 	}
 
 	reportRepository := mysql.NewReportRepository(db)
-	srv := server.New(host, uint(port), reportRepository)
+	userRepository := mysql.NewUserRepository(db)
+	srv := server.New(host, uint(port), reportRepository, userRepository)
 
 	return srv.Run()
 }

@@ -15,6 +15,7 @@ type JWTClaims struct {
 }
 
 type createRequest struct {
+	Token     string `json:"token"`
 	Username  string `json:"username" binding:"required"`
 	Email     string `json:"email" binding:"required"`
 	FirstName string `json:"firstName" binding:"required"`
@@ -43,6 +44,22 @@ func CreateJWT(email, role string) string {
 		return jwtError
 	}
 
+	token, err = jwt.Parse(signedJwtoken, func(token *jwt.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("Unexpected signin method: %v", token.Header["alg"])
+		}
+
+		return secret, nil
+	})
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		fmt.Println(claims["email"], claims["role"])
+	} else {
+		fmt.Sprintf(err.Error())
+	}
+
+	fmt.Println("Signed token: " + signedJwtoken)
+
 	return signedJwtoken
 }
 
@@ -55,8 +72,10 @@ func CreateHandler(usersRepository users.UserRepository) gin.HandlerFunc {
 			return
 		}
 
+		jwtUserToken := CreateJWT(req.Email, req.Role)
+
 		if len(req.Website) > 0 {
-			user := users.NewUser(req.Username, req.Email, req.FirstName, req.LastName, req.Website, req.Password, req.Role)
+			user := users.NewUser(jwtUserToken, req.Username, req.Email, req.FirstName, req.LastName, req.Website, req.Password, req.Role)
 
 			if err := usersRepository.Save(ctx, user); err != nil {
 				ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -65,7 +84,7 @@ func CreateHandler(usersRepository users.UserRepository) gin.HandlerFunc {
 
 			ctx.Status(http.StatusCreated)
 		} else {
-			user := users.NewUser(req.Username, req.Email, req.FirstName, req.LastName, "", req.Password, req.Role)
+			user := users.NewUser(jwtUserToken, req.Username, req.Email, req.FirstName, req.LastName, "none", req.Password, req.Role)
 
 			if err := usersRepository.Save(ctx, user); err != nil {
 				ctx.JSON(http.StatusInternalServerError, err.Error())
