@@ -1,6 +1,7 @@
 package users
 
 import (
+	"bctec/cmd/api/environment"
 	users "bctec/internal"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,7 @@ func CreateJWT(email, role string) string {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	secret := "secretaca"
+	secret := environment.SECRET
 	signedJwtoken, err := token.SignedString(secret)
 
 	if err != nil {
