@@ -1,0 +1,20 @@
+version: '2.0'
+services:
+  api:
+    volumes:
+      - /bctecapi
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - '8080:8080'
+    networks:
+      - api
+      - backend
+
+networks:
+  backend:
+    name: backend
+  api:
