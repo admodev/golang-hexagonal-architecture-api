@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"gorm.io/gorm"
 	"net/http"
 )
+
+var UserJwt string
 
 type JWTClaims struct {
 	Email string `json:"email"`
@@ -16,11 +19,13 @@ type JWTClaims struct {
 }
 
 type createRequest struct {
+	gorm.Model
+	Id        int64  `gorm:"primary_key;auto_increment;not_null"`
 	Token     string `json:"token"`
 	Username  string `json:"username" binding:"required"`
 	Email     string `json:"email" binding:"required"`
-	FirstName string `json:"firstName" binding:"required"`
-	LastName  string `json:"lastName" binding:"required"`
+	FirstName string `json:"first_name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
 	Website   string `json:"website"`
 	Password  string `json:"password" binding:"required"`
 	Role      string `json:"role" binding:"required"`
@@ -36,7 +41,8 @@ func CreateJWT(email, role string) string {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	secret := environment.SECRET
+	unparsedSecret := environment.SECRET
+	secret := []byte(unparsedSecret)
 	signedJwtoken, err := token.SignedString(secret)
 
 	if err != nil {
@@ -59,7 +65,7 @@ func CreateJWT(email, role string) string {
 		fmt.Sprintf(err.Error())
 	}
 
-	fmt.Println("Signed token: " + signedJwtoken)
+	UserJwt = signedJwtoken
 
 	return signedJwtoken
 }
@@ -73,10 +79,10 @@ func CreateHandler(usersRepository users.UserRepository) gin.HandlerFunc {
 			return
 		}
 
-		jwtUserToken := CreateJWT(req.Email, req.Role)
+		CreateJWT(req.Email, req.Role)
 
 		if len(req.Website) > 0 {
-			user := users.NewUser(jwtUserToken, req.Username, req.Email, req.FirstName, req.LastName, req.Website, req.Password, req.Role)
+			user := users.NewUser(UserJwt, req.Username, req.Email, req.FirstName, req.LastName, req.Website, req.Password, req.Role)
 
 			if err := usersRepository.Save(ctx, user); err != nil {
 				ctx.JSON(http.StatusInternalServerError, err.Error())
@@ -85,7 +91,7 @@ func CreateHandler(usersRepository users.UserRepository) gin.HandlerFunc {
 
 			ctx.Status(http.StatusCreated)
 		} else {
-			user := users.NewUser(jwtUserToken, req.Username, req.Email, req.FirstName, req.LastName, "none", req.Password, req.Role)
+			user := users.NewUser(UserJwt, req.Username, req.Email, req.FirstName, req.LastName, "none", req.Password, req.Role)
 
 			if err := usersRepository.Save(ctx, user); err != nil {
 				ctx.JSON(http.StatusInternalServerError, err.Error())
