@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
+	"log"
 	"net/http"
 )
 
@@ -75,6 +77,16 @@ func CreateJWT(email, role string) string {
 	return signedJwtoken
 }
 
+// hashAndSalt gets user password from array of bytes and hashes it
+func hashAndSalt(pwd []byte) string {
+	hash, err := bcrypt.GenerateFromPassword(pwd, bcrypt.MinCost)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return string(hash)
+}
+
 func CreateHandler(usersRepository users.UserRepository) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var req createRequest
@@ -86,7 +98,9 @@ func CreateHandler(usersRepository users.UserRepository) gin.HandlerFunc {
 
 		CreateJWT(req.Email, req.Role)
 
-		user := users.NewUser(UserJwt, req.Username, req.Email, req.FirstName, req.LastName, req.Website, req.Password, req.Role)
+		hashedPassword := hashAndSalt([]byte(req.Password))
+
+		user := users.NewUser(UserJwt, req.Username, req.Email, req.FirstName, req.LastName, req.Website, hashedPassword, req.Role)
 
 		if err := usersRepository.Save(ctx, user); err != nil {
 			ctx.JSON(http.StatusInternalServerError, err.Error())
