@@ -8,7 +8,7 @@ CREATE TABLE users (
     email text NOT NULL,
     first_name text NOT NULL,
     last_name text NOT NULL,
-    website text,
+    website text DEFAULT NULL,
     password text NOT NULL,
     role text NOT NULL
 );

@@ -31,6 +31,11 @@ type createRequest struct {
 	Role      string `json:"role" binding:"required"`
 }
 
+type UserCreateResponse struct {
+	status  int32
+	message string
+}
+
 func CreateJWT(email, role string) string {
 	claims := JWTClaims{
 		email,
@@ -81,24 +86,15 @@ func CreateHandler(usersRepository users.UserRepository) gin.HandlerFunc {
 
 		CreateJWT(req.Email, req.Role)
 
-		if len(req.Website) > 0 {
-			user := users.NewUser(UserJwt, req.Username, req.Email, req.FirstName, req.LastName, req.Website, req.Password, req.Role)
+		user := users.NewUser(UserJwt, req.Username, req.Email, req.FirstName, req.LastName, req.Website, req.Password, req.Role)
 
-			if err := usersRepository.Save(ctx, user); err != nil {
-				ctx.JSON(http.StatusInternalServerError, err.Error())
-				return
-			}
-
-			ctx.Status(http.StatusCreated)
-		} else {
-			user := users.NewUser(UserJwt, req.Username, req.Email, req.FirstName, req.LastName, "none", req.Password, req.Role)
-
-			if err := usersRepository.Save(ctx, user); err != nil {
-				ctx.JSON(http.StatusInternalServerError, err.Error())
-				return
-			}
-
-			ctx.Status(http.StatusCreated)
+		if err := usersRepository.Save(ctx, user); err != nil {
+			ctx.JSON(http.StatusInternalServerError, err.Error())
+			return
 		}
+
+		ctx.Status(http.StatusCreated)
+		ctx.JSON(http.StatusCreated, "User created successfully")
+		return
 	}
 }
