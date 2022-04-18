@@ -3,6 +3,7 @@ package report
 import "context"
 
 type User struct {
+	id        int64
 	token     string
 	username  string
 	email     string
@@ -28,6 +29,10 @@ func NewUser(token, username, email, firstName, lastName, website, password, rol
 
 type UserRepository interface {
 	Save(ctx context.Context, user User) error
+}
+
+func (u User) ID() int64 {
+	return u.id
 }
 
 func (u User) Token() string {
