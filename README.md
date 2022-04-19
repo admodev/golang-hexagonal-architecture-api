@@ -4,6 +4,10 @@
 
 #### Author: Adolfo H Moyano [admodev](https://github.com/admodev)
 
+## Base URL
+
+https://bctec-api.onrender.com/
+
 ## Endpoints
 
 #### /health
