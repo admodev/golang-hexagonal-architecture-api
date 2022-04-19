@@ -6,12 +6,27 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile
+    environment:
+      - MYSQL_HOST=${DB_HOST}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASS}
     env_file:
       - .env
     ports:
       - '8080:8080'
     networks:
       - api
+      - backend
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASS}
+    volumes:
+      - ${PWD}/cmd/api/migrations:/docker-entrypoint-initdb.d
+    networks:
       - backend
 
 networks:
